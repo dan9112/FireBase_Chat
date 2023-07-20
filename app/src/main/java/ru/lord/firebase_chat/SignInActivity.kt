@@ -1,5 +1,6 @@
 package ru.lord.firebase_chat
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,13 +38,14 @@ class SignInActivity : AppCompatActivity() {
         binding.bSignIn.setOnClickListener {
             signInWithGoogle()
         }
+        checkAuthState()
     }
 
     private val client
         get() = GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
+            // .requestEmail()
             .build()
             .let {
                 GoogleSignIn.getClient(this, it)
@@ -55,12 +57,20 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
+
+
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential).addOnCompleteListener {
-            Log.d(
-                TAG,
-                if (it.isSuccessful) "Google signIn done" else "Google signIn error"
-            )
+            if (it.isSuccessful) {
+                Log.d(TAG, "Google signIn done")
+                checkAuthState()
+            } else {
+                Log.d(TAG, "Google signIn error")
+            }
         }
+    }
+
+    private fun checkAuthState() {
+        if (auth.currentUser != null) startActivity(Intent(this, MainActivity::class.java))
     }
 }
