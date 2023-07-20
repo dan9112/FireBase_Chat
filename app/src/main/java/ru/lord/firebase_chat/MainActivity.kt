@@ -1,8 +1,8 @@
-package com.example.firebase_chat
+package ru.lord.firebase_chat
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.firebase_chat.databinding.ActivityMainBinding
+import ru.lord.firebase_chat.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

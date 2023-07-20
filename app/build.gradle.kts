@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.firebase_chat"
+    namespace = "ru.lord.firebase_chat"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.firebase_chat"
+        applicationId = "ru.lord.firebase_chat"
         minSdk = 21
         targetSdk = 33
         versionCode = 1
