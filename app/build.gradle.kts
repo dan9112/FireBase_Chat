@@ -57,4 +57,8 @@ dependencies {
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.2.0"))// следит за версиями связанных библиотек
     implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    // Google Auth
+    implementation("com.google.android.gms:play-services-auth:20.6.0")
 }

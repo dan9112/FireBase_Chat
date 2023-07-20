@@ -15,7 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "119853639146-jt94kimubv2afgag91qmk55h5damipus.apps.googleusercontent.com",
+          "client_id": "119853639146-6r58700n2u2afpmvode6e4gtcc4qm07e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ru.lord.firebase_chat",
+            "certificate_hash": "76fd2f0af6b6f0c7c61ab72499d15cc1c23dbc90"
+          }
+        },
+        {
+          "client_id": "119853639146-2aoiktfpp36jpolo15mh96touo2f8bfq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -28,7 +36,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "119853639146-jt94kimubv2afgag91qmk55h5damipus.apps.googleusercontent.com",
+              "client_id": "119853639146-2aoiktfpp36jpolo15mh96touo2f8bfq.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
