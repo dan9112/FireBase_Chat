@@ -10,10 +10,11 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import ru.lord.firebase_chat.databinding.UserListItemBinding
 
-class MessageAdapter(private val userName: String?, private val dbRef: DatabaseReference) :
+class MessageAdapter(private val user: FirebaseUser?, private val dbRef: DatabaseReference) :
     ListAdapter<Message, MessageAdapter.ItemHolder>(ItemComparator()) {
     inner class ItemHolder(private val binding: UserListItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(message: Message, othersMessage: Boolean) = with(receiver = binding) {
@@ -31,20 +32,41 @@ class MessageAdapter(private val userName: String?, private val dbRef: DatabaseR
                     layoutParams.height,
                     if (!othersMessage) Gravity.END else Gravity.START
                 )
-                if (!othersMessage) setOnLongClickListener {
+                setOnLongClickListener {
                     val popupMenu = PopupMenu(it.context, it)
                     popupMenu.inflate(R.menu.message_popup_menu)
+                    popupMenu.menu.findItem(R.id.deleteAll).isVisible = !othersMessage
                     popupMenu.setOnMenuItemClickListener { menuItem ->
-                        if (menuItem.itemId == R.id.delete) {
-                            dbRef.child(message.key).removeValue { error, _ ->
-                                error?.run {
-                                    Log.e(TAG, toString())
-                                    Toast.makeText(it.context, "Ошибка при удалении!", Toast.LENGTH_SHORT).show()
-                                }
+                        when (menuItem.itemId) {
+                            R.id.deleteAll -> {
+                                val childUpdates = hashMapOf<String, Any?>(
+                                    "/messages/${message.key}" to null,
+                                    "/${user?.uid}/${message.key}" to null
+                                )
+
+                                dbRef
+                                    .updateChildren(childUpdates)
+                                    .addOnFailureListener { exception ->
+                                        Log.e(TAG, exception.toString())
+                                        Toast.makeText(it.context, "Ошибка при удалении!", Toast.LENGTH_SHORT).show()
+                                    }
+                                return@setOnMenuItemClickListener true
                             }
-                            return@setOnMenuItemClickListener true
+
+                            R.id.delete -> {
+                                dbRef
+                                    .child(user!!.uid)
+                                    .child(message.key)
+                                    .removeValue()
+                                    .addOnFailureListener { exception ->
+                                        Log.e(TAG, exception.toString())
+                                        Toast.makeText(it.context, "Ошибка при удалении!", Toast.LENGTH_SHORT).show()
+                                    }
+                                return@setOnMenuItemClickListener true
+                            }
+
+                            else -> false
                         }
-                        false
                     }
                     popupMenu.show()
                     true
@@ -65,7 +87,7 @@ class MessageAdapter(private val userName: String?, private val dbRef: DatabaseR
         }
 
     override fun onBindViewHolder(holder: ItemHolder, position: Int) = getItem(position).let { user ->
-        holder.bind(message = user, othersMessage = user.author != userName)
+        holder.bind(message = user, othersMessage = user.author != this.user?.displayName)
     }
 
     private companion object {

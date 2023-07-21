@@ -38,15 +38,17 @@ class MainActivity : AppCompatActivity() {
         setUpActionBar()
 
         val database = Firebase.database
-        val myRef = database.getReference("messages")
+        val chatRef = database.getReference("Chat_0")
+        val messagesRef = chatRef.child("messages")
+        val userRef = chatRef.child(auth.currentUser!!.uid)
 
         with(receiver = binding) {
             edMessage.addTextChangedListener {
                 bSend.isEnabled = it?.isNotBlank() ?: false
             }
             bSend.setOnClickListener {
-                myRef
-                    .child(myRef.push().key ?: "bla-bla")
+                messagesRef
+                    .child(messagesRef.push().key ?: "bla-bla")
                     .setValue(
                         DatabaseMessage(
                             author = auth.currentUser?.displayName,
@@ -57,12 +59,13 @@ class MainActivity : AppCompatActivity() {
                     )
             }
         }
-        onChangeListener(dRef = myRef)
-        initRcView(dbRef = myRef)
+        onChatChangeListener(messagesRef = messagesRef, userRef = userRef)
+        onChangeListener(dRef = userRef)
+        initRcView(chatRef = chatRef)
     }
 
-    private fun initRcView(dbRef: DatabaseReference) = with(binding) {
-        rcViewAdapter = MessageAdapter(userName = auth.currentUser?.displayName, dbRef = dbRef)
+    private fun initRcView(chatRef: DatabaseReference) = with(binding) {
+        rcViewAdapter = MessageAdapter(user = auth.currentUser, dbRef = chatRef)
         with(receiver = rcView) {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = rcViewAdapter
@@ -84,6 +87,31 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun onChatChangeListener(messagesRef: DatabaseReference, userRef: DatabaseReference) {
+        messagesRef.addValueEventListener(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val list = snapshot.children
+                        .map {
+                            it.getValue(DatabaseMessage::class.java)?.toMessage(it.key!!)
+                        }
+                        .dropWhile {
+                            rcViewAdapter.currentList.isNotEmpty() && it?.key != rcViewAdapter.currentList.last().key
+                        }
+                    if (list.isNotEmpty()) list
+                        .forEach { message ->
+                            message?.let {
+                                userRef.child(it.key)
+                                    .setValue(it.toDatabaseMessage())
+                            }
+                        }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            }
+        )
     }
 
     private fun onChangeListener(dRef: DatabaseReference) {
