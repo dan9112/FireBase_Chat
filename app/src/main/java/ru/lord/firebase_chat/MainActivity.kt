@@ -1,10 +1,10 @@
 package ru.lord.firebase_chat
 
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -75,8 +75,11 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.run {
             auth.currentUser?.let { firebaseUser ->
                 thread(isDaemon = true) {
-                    val bMap = Picasso.get().load(firebaseUser.photoUrl).get()
-                    val dIcon = BitmapDrawable(resources, bMap)
+                    val dIcon = Picasso.get().load(firebaseUser.photoUrl).get().let { bMap ->
+                        RoundedBitmapDrawableFactory.create(resources, bMap).apply {
+                            isCircular = true
+                        }
+                    }
                     runOnUiThread {
                         setDisplayHomeAsUpEnabled(true)
                         setHomeAsUpIndicator(dIcon)
