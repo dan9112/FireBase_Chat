@@ -5,6 +5,8 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
+import androidx.core.widget.addTextChangedListener
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -24,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var rcViewAdapter: UserAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +38,35 @@ class MainActivity : AppCompatActivity() {
         setUpActionBar()
 
         val database = Firebase.database
-        val myRef = database.getReference("message")
+        val myRef = database.getReference("messages")
 
-        binding.bSend.setOnClickListener {
-            myRef.setValue(binding.edMessage.text.toString())
+        with(receiver = binding) {
+            edMessage.addTextChangedListener {
+                bSend.isEnabled = it?.isNotBlank() ?: false
+            }
+            bSend.setOnClickListener {
+                myRef
+                    .child(myRef.push().key ?: "bla-bla")
+                    .setValue(
+                        User(
+                            name = auth.currentUser?.displayName,
+                            message = edMessage.text.toString().apply {
+                                edMessage.text.clear()
+                            }
+                        )
+                    )
+            }
         }
         onChangeListener(dRef = myRef)
+        initRcView()
+    }
+
+    private fun initRcView() = with(binding) {
+        rcViewAdapter = UserAdapter(auth.currentUser?.displayName)
+        with(receiver = rcView) {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = rcViewAdapter
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -63,8 +89,15 @@ class MainActivity : AppCompatActivity() {
     private fun onChangeListener(dRef: DatabaseReference) {
         dRef.addValueEventListener(
             object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) =
-                    binding.rcView.append("\nDanil: ${snapshot.value}")
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val list = mutableListOf<User>()
+                    snapshot.children.forEach { s ->
+                        s.getValue(User::class.java)?.let { user ->
+                            list.add(user)
+                        }
+                    }
+                    rcViewAdapter.submitList(list)
+                }
 
                 override fun onCancelled(error: DatabaseError) {}
             }
