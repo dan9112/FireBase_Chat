@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var rcViewAdapter: UserAdapter
+    private lateinit var rcViewAdapter: MessageAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,9 +48,9 @@ class MainActivity : AppCompatActivity() {
                 myRef
                     .child(myRef.push().key ?: "bla-bla")
                     .setValue(
-                        User(
-                            name = auth.currentUser?.displayName,
-                            message = edMessage.text.toString().apply {
+                        DatabaseMessage(
+                            author = auth.currentUser?.displayName,
+                            text = edMessage.text.toString().apply {
                                 edMessage.text.clear()
                             }
                         )
@@ -58,11 +58,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         onChangeListener(dRef = myRef)
-        initRcView()
+        initRcView(dbRef = myRef)
     }
 
-    private fun initRcView() = with(binding) {
-        rcViewAdapter = UserAdapter(auth.currentUser?.displayName)
+    private fun initRcView(dbRef: DatabaseReference) = with(binding) {
+        rcViewAdapter = MessageAdapter(userName = auth.currentUser?.displayName, dbRef = dbRef)
         with(receiver = rcView) {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = rcViewAdapter
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu, menu)
+        menuInflater.inflate(R.menu.main_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -90,10 +90,10 @@ class MainActivity : AppCompatActivity() {
         dRef.addValueEventListener(
             object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = mutableListOf<User>()
+                    val list = mutableListOf<Message>()
                     snapshot.children.forEach { s ->
-                        s.getValue(User::class.java)?.let { user ->
-                            list.add(user)
+                        s.getValue(DatabaseMessage::class.java)?.let { user ->
+                            list.add(user.toMessage(s.key!!))
                         }
                     }
                     rcViewAdapter.submitList(list)

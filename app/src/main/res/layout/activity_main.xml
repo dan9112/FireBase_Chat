@@ -11,6 +11,7 @@
         android:id="@+id/bSend"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:enabled="false"
         android:text="@string/send"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,7 +24,7 @@
         android:ems="10"
         android:hint="@string/message"
         android:importantForAutofill="no"
-        android:inputType="textCapWords"
+        android:inputType="textCapSentences"
         app:layout_constraintBottom_toTopOf="@+id/bSend"
         app:layout_constraintEnd_toEndOf="@+id/bSend"
         app:layout_constraintStart_toStartOf="@+id/bSend" />

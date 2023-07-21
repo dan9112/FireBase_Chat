@@ -2,4 +2,7 @@
     <string name="app_name">FireBase Chat</string>
     <string name="message">Message</string>
     <string name="send">Send</string>
+    <string name="delete">Delete</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="google_signin">Google SignIn</string>
 </resources>
