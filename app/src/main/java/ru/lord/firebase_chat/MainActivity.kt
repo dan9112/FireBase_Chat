@@ -99,22 +99,30 @@ class MainActivity : AppCompatActivity() {
                         .map {
                             it.getValue(DatabaseMessage::class.java)?.toMessage(it.key!!)
                         }
-                        .dropWhile {
-                            rcViewAdapter.currentList.isNotEmpty() && it?.key != rcViewAdapter.currentList.last().key
-                        }
-                    if (list.isNotEmpty()) list
-                        .forEachIndexed { index, message ->
-                            message?.let {
-                                userRef.child(it.key)
-                                    .setValue(it.toDatabaseMessage())
-                                    .run {
-                                        if (index == list.lastIndex) addOnSuccessListener {
-                                            binding.syncMessage.isVisible = false
-                                        }
-                                    }
-
+                    if (list.isNotEmpty()) {
+                        val childUpdates = hashMapOf<String, Any?>()
+                        val deletedList = rcViewAdapter.currentList.filter { !list.contains(it) }
+                        if (deletedList.isNotEmpty()) {
+                            deletedList.forEach {
+                                childUpdates["/${it.key}"] = null
                             }
                         }
+                        val last = rcViewAdapter.currentList.last { !deletedList.contains(it) }
+                        val addedList = list.dropWhile {
+                            rcViewAdapter.currentList.isNotEmpty() && it?.key != last.key
+                        }
+                        if (addedList.isNotEmpty()) {
+                            addedList
+                                .drop(1)
+                                .forEach { message ->
+                                    childUpdates["/${message!!.key}"] =
+                                        message.toDatabaseMessage().toMap()
+                                }
+                        }
+                        userRef.updateChildren(childUpdates).addOnSuccessListener {
+                            binding.syncMessage.isVisible = false
+                        }
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {}

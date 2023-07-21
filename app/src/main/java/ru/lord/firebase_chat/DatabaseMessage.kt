@@ -10,4 +10,10 @@ data class DatabaseMessage(
 ) {
     @Exclude
     fun toMessage(key: String) = Message(author = author, text = text, key = key)
+
+    @Exclude
+    fun toMap() = mapOf(
+        "author" to author,
+        "text" to text
+    )
 }
