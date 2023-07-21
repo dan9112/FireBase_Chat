@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onChatChangeListener(messagesRef: DatabaseReference, userRef: DatabaseReference) {
+        binding.syncMessage.isVisible = true
         messagesRef.addValueEventListener(
             object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -101,10 +103,16 @@ class MainActivity : AppCompatActivity() {
                             rcViewAdapter.currentList.isNotEmpty() && it?.key != rcViewAdapter.currentList.last().key
                         }
                     if (list.isNotEmpty()) list
-                        .forEach { message ->
+                        .forEachIndexed { index, message ->
                             message?.let {
                                 userRef.child(it.key)
                                     .setValue(it.toDatabaseMessage())
+                                    .run {
+                                        if (index == list.lastIndex) addOnSuccessListener {
+                                            binding.syncMessage.isVisible = false
+                                        }
+                                    }
+
                             }
                         }
                 }
