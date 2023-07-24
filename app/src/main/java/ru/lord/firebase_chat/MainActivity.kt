@@ -67,7 +67,9 @@ class MainActivity : AppCompatActivity() {
     private fun initRcView(chatRef: DatabaseReference) = with(binding) {
         rcViewAdapter = MessageAdapter(user = auth.currentUser, dbRef = chatRef)
         with(receiver = rcView) {
-            layoutManager = LinearLayoutManager(this@MainActivity)
+            layoutManager = LinearLayoutManager(this@MainActivity).apply {
+                stackFromEnd = true
+            }
             adapter = rcViewAdapter
             addItemDecoration(MessageDecoration())
         }
