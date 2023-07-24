@@ -107,13 +107,16 @@ class MainActivity : AppCompatActivity() {
                                 childUpdates["/${it.key}"] = null
                             }
                         }
-                        val last = rcViewAdapter.currentList.last { !deletedList.contains(it) }
-                        val addedList = list.dropWhile {
-                            rcViewAdapter.currentList.isNotEmpty() && it?.key != last.key
-                        }
+                        val last = rcViewAdapter.currentList.lastOrNull { !deletedList.contains(it) }
+                        val addedList: List<Message?> = last?.let {
+                            list
+                                .dropWhile {
+                                    rcViewAdapter.currentList.isNotEmpty() && it?.key != last.key
+                                }
+                                .drop(1)
+                        } ?: list
                         if (addedList.isNotEmpty()) {
                             addedList
-                                .drop(1)
                                 .forEach { message ->
                                     childUpdates["/${message!!.key}"] =
                                         message.toDatabaseMessage().toMap()
