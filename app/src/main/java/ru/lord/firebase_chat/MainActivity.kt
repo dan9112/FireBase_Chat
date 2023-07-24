@@ -60,9 +60,8 @@ class MainActivity : AppCompatActivity() {
                     )
             }
         }
-        onChatChangeListener(messagesRef = messagesRef, userRef = userRef)
-        onChangeListener(dRef = userRef)
         initRcView(chatRef = chatRef)
+        onChangeListener(messagesRef = messagesRef, userRef = userRef)
     }
 
     private fun initRcView(chatRef: DatabaseReference) = with(binding) {
@@ -70,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         with(receiver = rcView) {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = rcViewAdapter
+            addItemDecoration(MessageDecoration())
         }
     }
 
@@ -90,10 +90,9 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun onChatChangeListener(messagesRef: DatabaseReference, userRef: DatabaseReference) {
-        binding.syncMessage.isVisible = true
-        messagesRef.addValueEventListener(
-            object : ValueEventListener {
+    private fun onChangeListener(messagesRef: DatabaseReference, userRef: DatabaseReference, first: Boolean = true) {
+        fun onChatChangeListener(first: Boolean = false) {
+            fun getRootValueEventListener(onUpdateListener: () -> Unit = {}) = object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val list = snapshot.children
                         .map {
@@ -101,17 +100,17 @@ class MainActivity : AppCompatActivity() {
                         }
                     if (list.isNotEmpty()) {
                         val childUpdates = hashMapOf<String, Any?>()
-                        val deletedList = rcViewAdapter.currentList.filter { !list.contains(it) }
+                        val deletedList = rcViewAdapter.list.filter { !list.contains(it) }
                         if (deletedList.isNotEmpty()) {
                             deletedList.forEach {
                                 childUpdates["/${it.key}"] = null
                             }
                         }
-                        val last = rcViewAdapter.currentList.lastOrNull { !deletedList.contains(it) }
+                        val last = rcViewAdapter.list.lastOrNull { !deletedList.contains(it) }
                         val addedList: List<Message?> = last?.let {
                             list
                                 .dropWhile {
-                                    rcViewAdapter.currentList.isNotEmpty() && it?.key != last.key
+                                    rcViewAdapter.list.isNotEmpty() && it?.key != last.key
                                 }
                                 .drop(1)
                         } ?: list
@@ -123,32 +122,63 @@ class MainActivity : AppCompatActivity() {
                                 }
                         }
                         userRef.updateChildren(childUpdates).addOnSuccessListener {
-                            binding.syncMessage.isVisible = false
+                            onUpdateListener()
                         }
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
             }
-        )
-    }
 
-    private fun onChangeListener(dRef: DatabaseReference) {
-        dRef.addValueEventListener(
-            object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = mutableListOf<Message>()
-                    snapshot.children.forEach { s ->
-                        s.getValue(DatabaseMessage::class.java)?.let { user ->
-                            list.add(user.toMessage(s.key!!))
-                        }
+            binding.syncMessage.isVisible = first
+            with(receiver = messagesRef) {
+                if (first) addListenerForSingleValueEvent(
+                    getRootValueEventListener {
+                        onChangeListener(messagesRef = messagesRef, userRef = userRef, first = false)
+                        binding.syncMessage.isVisible = false
                     }
-                    rcViewAdapter.submitList(list)
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
+                )
+                else addValueEventListener(getRootValueEventListener())
             }
-        )
+        }
+
+        fun getMyValueEventListener(onDataChangeListener: () -> Unit) = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Message>()
+                snapshot.children.forEach { s ->
+                    s.getValue(DatabaseMessage::class.java)?.let { user ->
+                        list.add(user.toMessage(s.key!!))
+                    }
+                }
+                with(rcViewAdapter.list) {
+                    clear()
+                    addAll(list)
+                }
+                onDataChangeListener()
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        }
+
+        with(userRef) {
+            if (first) {
+                addListenerForSingleValueEvent(
+                    getMyValueEventListener {
+                        onChatChangeListener(true)
+                    }
+                )
+            } else {
+                addValueEventListener(
+                    getMyValueEventListener {
+                        val needScroll =
+                            (binding.rcView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() == rcViewAdapter.lastIndex
+                        rcViewAdapter.update()
+                        if (needScroll) binding.rcView.scrollToPosition(rcViewAdapter.lastIndex)
+                    }
+                )
+                onChatChangeListener()
+            }
+        }
     }
 
     private fun setUpActionBar() {

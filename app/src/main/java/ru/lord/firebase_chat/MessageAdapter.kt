@@ -8,14 +8,16 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import ru.lord.firebase_chat.databinding.UserListItemBinding
 
 class MessageAdapter(private val user: FirebaseUser?, private val dbRef: DatabaseReference) :
-    ListAdapter<Message, MessageAdapter.ItemHolder>(ItemComparator()) {
+    RecyclerView.Adapter<MessageAdapter.ItemHolder>() {
+    private val currentList = mutableListOf<Message>()
+    val list = mutableListOf<Message>()
+
     inner class ItemHolder(private val binding: UserListItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(message: Message, othersMessage: Boolean) = with(receiver = binding) {
             with(receiver = this.message) {
@@ -75,22 +77,41 @@ class MessageAdapter(private val user: FirebaseUser?, private val dbRef: Databas
         }
     }
 
-    class ItemComparator : DiffUtil.ItemCallback<Message>() {
-        override fun areItemsTheSame(oldItem: Message, newItem: Message) = oldItem == newItem
+    val lastIndex
+        get() = currentList.lastIndex
 
-        override fun areContentsTheSame(oldItem: Message, newItem: Message) = oldItem == newItem
+    fun update() {
+        val diffCallback = ItemDiffUtilCallback(oldList = currentList, newList = list)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        currentList.clear()
+        currentList.addAll(list)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class ItemDiffUtilCallback(private val oldList: List<Message>, private val newList: List<Message>) :
+        DiffUtil.Callback() {
+        override fun getOldListSize() = oldList.size
+
+        override fun getNewListSize() = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+            oldList[oldItemPosition].key == newList[newItemPosition].key
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+            oldList[oldItemPosition].author == newList[newItemPosition].author &&
+                oldList[oldItemPosition].text == newList[newItemPosition].text
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        LayoutInflater.from(parent.context).let { context ->
-            ItemHolder(UserListItemBinding.inflate(context, parent, false))
-        }
+        ItemHolder(UserListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: ItemHolder, position: Int) = getItem(position).let { user ->
+    override fun getItemCount() = currentList.size
+
+    override fun onBindViewHolder(holder: ItemHolder, position: Int) = currentList[position].let { user ->
         holder.bind(message = user, othersMessage = user.author != this.user?.displayName)
     }
 
     private companion object {
-        const val TAG = "MessageAdapter"
+        const val TAG = "ExtendedMessageAdapter"
     }
 }
