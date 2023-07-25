@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FireBase Чат Compose</string>
+    <string name="message">Сообщение</string>
+    <string name="send">Отправить</string>
+    <string name="delete">Удалить у себя</string>
+    <string name="sign_out">Выйти</string>
+    <string name="google_signin">Войти через Google аккаунт</string>
+    <string name="delete_from_everyone">Удалить у всех</string>
+    <string name="synchronization">Синхронизация</string>
+</resources>

@@ -15,4 +15,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "FireBase Chat"
-include(":app")
+include(":app", ":app_compose")
