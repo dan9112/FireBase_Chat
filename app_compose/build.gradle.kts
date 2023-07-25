@@ -16,8 +16,8 @@ android {
         applicationId = "ru.lord.firebase_chat"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -83,5 +83,9 @@ dependencies {
     // Google Auth
     implementation("com.google.android.gms:play-services-auth:20.6.0")
 
+    // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    //ConstraintLayout
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 }
