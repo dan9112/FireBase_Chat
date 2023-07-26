@@ -21,7 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
-import ru.lord.firebase_chat.presentation.profile.ProfileScreen
+import ru.lord.firebase_chat.presentation.chat.ChatScreen
 import ru.lord.firebase_chat.presentation.sign_in.GoogleAuthUiClient
 import ru.lord.firebase_chat.presentation.sign_in.SignInScreen
 import ru.lord.firebase_chat.presentation.sign_in.SignInViewModel
@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(route = "profile") {
-                        ProfileScreen(
+                        ChatScreen(
                             userData = googleAuthUiClient.getSignedInUser(),
                             onSignOut = {
                                 lifecycleScope.launch {
