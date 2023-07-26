@@ -1,6 +1,5 @@
 package ru.lord.firebase_chat
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +31,7 @@ class SignInActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
         auth = Firebase.auth
@@ -69,6 +69,6 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun checkAuthState() {
-        if (auth.currentUser != null) startActivity(Intent(this, MainActivity::class.java))
+        if (auth.currentUser != null) launchActivityAndFinish(MainActivity::class.java)
     }
 }

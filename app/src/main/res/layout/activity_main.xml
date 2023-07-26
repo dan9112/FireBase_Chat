@@ -84,6 +84,25 @@
             android:src="@android:drawable/ic_menu_send"
             android:text="@string/send"
             app:elevation="0dp"
+            tools:enabled="true"
             tools:ignore="ContentDescription" />
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/bToEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:backgroundTint="?attr/colorPrimaryContainer"
+        android:rotation="270"
+        android:src="?attr/homeAsUpIndicator"
+        android:text="@string/send"
+        android:visibility="gone"
+        app:backgroundTint="?attr/colorSurface"
+        app:borderWidth="2dp"
+        app:elevation="0dp"
+        app:layout_constraintBottom_toTopOf="@id/inputContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

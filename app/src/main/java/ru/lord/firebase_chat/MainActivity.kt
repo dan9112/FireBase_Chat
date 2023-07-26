@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity() {
                         )
                     )
             }
+            bToEnd.setOnClickListener {
+                rcView.smoothScrollToPosition(rcViewAdapter.lastIndex)
+                bToEnd.isVisible = false
+            }
         }
         initRcView(chatRef = chatRef)
         onChangeListener(messagesRef = messagesRef, userRef = userRef)
@@ -72,6 +76,12 @@ class MainActivity : AppCompatActivity() {
             }
             adapter = rcViewAdapter
             addItemDecoration(MessageDecoration())
+            addOnScrollListener(
+                OnRecyclerViewScrollListener {
+                    bToEnd.isVisible = it &&
+                        (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() < rcViewAdapter.lastIndex - 2
+                }
+            )
         }
     }
 
@@ -85,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             googleSignInClient.signOut().addOnCompleteListener {
                 if (it.isSuccessful) {
                     auth.signOut()
-                    finish()
+                    launchActivityAndFinish(SignInActivity::class.java)
                 }
             }
         }
@@ -154,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 with(rcViewAdapter.list) {
                     clear()
-                    addAll(list)
+                    addAll(elements = list)
                 }
                 onDataChangeListener()
             }
@@ -173,9 +183,10 @@ class MainActivity : AppCompatActivity() {
                 addValueEventListener(
                     getMyValueEventListener {
                         val needScroll =
-                            (binding.rcView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() == rcViewAdapter.lastIndex
+                            (binding.rcView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() == rcViewAdapter.lastIndex ||
+                                rcViewAdapter.list.last().author == auth.currentUser?.displayName
                         rcViewAdapter.update()
-                        if (needScroll) binding.rcView.scrollToPosition(rcViewAdapter.lastIndex)
+                        if (needScroll) binding.rcView.smoothScrollToPosition(rcViewAdapter.lastIndex)
                     }
                 )
                 onChatChangeListener()
