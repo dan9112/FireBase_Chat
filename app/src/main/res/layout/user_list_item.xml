@@ -23,14 +23,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="16sp" />
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/userName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnPrimaryContainer"
-                android:textSize="14sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

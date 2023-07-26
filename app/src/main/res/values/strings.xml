@@ -3,7 +3,7 @@
     <string name="message">Message</string>
     <string name="send">Send</string>
     <string name="delete">Delete on your own</string>
-    <string name="sign_out">Sign Out</string>
+    <string name="sign_out">Sign out</string>
     <string name="google_signin">Google SignIn</string>
     <string name="delete_from_everyone">Delete from everyone</string>
     <string name="synchronization">Synchronization</string>
